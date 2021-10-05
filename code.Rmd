@@ -1,0 +1,649 @@
+---
+title: 'Reproducible report: <br/> Silicon, biological seed treatment and cutting reduce the intensity of leaf spot diseases affecting Lolium multiflorum '
+output:
+  html_document:
+    css: style.css
+    depth: 5
+    number_sections: no
+    theme: default
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+date: 'Created: 2016-10-01 <br/>Last update: `r Sys.Date()`'
+---
+
+<link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+
+
+## Essential packages
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(gsheet)
+library(cowplot)
+library(patchwork)
+library(ggthemes)
+theme_set(theme_half_open())
+```
+
+
+```{r message=FALSE, warning=FALSE}
+dat <- read_csv("data/dat_treatments.csv")
+```
+
+## Curves 2018 check
+
+```{r}
+p2018 <- dat %>%
+  filter(treat == "CHK") %>%
+  filter(cut == "0C") %>%
+  filter(year == "2018") %>%
+  group_by(time, treat, cut) %>%
+  summarize(
+    Bipolaris = mean(bip),
+    Cercospora = mean(cer),
+    Pyricularia = mean(pyr),
+    mean_all = mean(all)
+  ) %>%
+  # select(-mean_all) %>%
+  ungroup() %>%
+  pivot_longer(4:6, names_to = "disease", values_to = "sev") %>%
+  ggplot(aes(time, sev, fill = disease, group = disease)) +
+  geom_area(alpha = 0.7) +
+  theme_clean() +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white"),
+    legend.text = element_text(face = c(rep("italic", 5), rep("plain", 5)))
+  ) +
+  scale_fill_canva() +
+  ylim(0, 25) +
+  labs(
+    fill = "Pathogen", x = "Day after disease onset (17 August)",
+    y = "Percent area affected (%)",
+    title = "2018"
+  )
+p2018
+```
+
+## Curves 2019 check
+
+```{r}
+p2019 <- dat %>%
+  filter(treat == "CHK") %>%
+  filter(cut == "0C") %>%
+  filter(year == "2019") %>%
+  group_by(time, treat, cut) %>%
+  summarize(
+    Bipolaris = mean(bip),
+    Cercospora = mean(cer),
+    Pyricularia = mean(pyr),
+    mean_all = mean(all)
+  ) %>%
+  # select(-mean_all) %>%
+  ungroup() %>%
+  pivot_longer(4:6, names_to = "disease", values_to = "sev") %>%
+  ggplot(aes(time, sev, fill = disease, group = disease)) +
+  geom_area(alpha = 0.7) +
+  theme_clean() +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white"),
+    legend.text = element_text(face = c(rep("italic", 5), rep("plain", 5)))
+  ) +
+  scale_fill_canva() +
+  ylim(0, 25) +
+  labs(
+    fill = "Pathogen", x = "Day after disease onset (10 May)",
+    y = "Percent area affected (%)",
+    title = "2019"
+  )
+p2019
+```
+
+## Figure 1
+
+```{r}
+(p2018 | p2019) +
+
+  plot_layout(guides = "collect")
+ggsave("figs/p1.png", width = 9, height = 4, bg = "white")
+```
+
+## All curves
+
+```{r}
+dat2 <- dat %>%
+  filter(year == "2018") %>%
+  group_by(time, treat, cut) %>%
+  summarize(
+    Bipolaris = mean(bip),
+    Cercospora = mean(cer),
+    Pyricularia = mean(pyr),
+    mean_all = mean(all)
+  ) %>%
+  # select(-mean_all) %>%
+  ungroup() %>%
+  pivot_longer(4:6, names_to = "disease", values_to = "sev")
+```
+
+### All curves 2018 (Fig. S1)
+
+```{r}
+
+p20180cut <- dat2 %>%
+  filter(cut == "0C") %>%
+  ggplot(aes(time, sev, color = treat, groups = treat)) +
+  geom_line() +
+  geom_point() +
+  scale_color_colorblind() +
+  facet_wrap(~disease, ncol = 1) +
+  ylim(0, 18) +
+  theme_clean() +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    title = "2018",
+    subtitle = "Uncut",
+    x = "Day after 17 August",
+    y = "Percent area affected (%)"
+  )
+
+
+
+p20181cut <- dat2 %>%
+  filter(cut == "1C") %>%
+  ggplot(aes(time, sev, color = treat, groups = treat)) +
+  geom_line() +
+  geom_point() +
+  annotate("segment",
+    linetype = "dotted", x = 12, xend = 12, y = 12, yend = 0,
+    arrow = arrow()
+  ) +
+  annotate("text", x = 12, y = 14, label = "29 Aug") +
+  scale_color_colorblind() +
+  facet_wrap(~disease, ncol = 1) +
+  theme_clean() +
+  ylim(0, 18) +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    title = "2018",
+    subtitle = "One cut",
+    x = "Day after 17 August",
+    y = "Percent area affected (%)"
+  )
+
+
+
+p20182cut <- dat2 %>%
+  filter(cut == "2C") %>%
+  ggplot(aes(time, sev, color = treat, groups = treat)) +
+  geom_line() +
+  geom_point() +
+  annotate("segment",
+    linetype = "dotted", x = 12, xend = 12, y = 12, yend = 0,
+    arrow = arrow()
+  ) +
+  annotate("text", x = 12, y = 14, label = "29 Aug") +
+  annotate("segment",
+    linetype = "dotted", x = 49, xend = 49, y = 12, yend = 0,
+    arrow = arrow()
+  ) +
+  annotate("text", x = 49, y = 14, label = "5 Oct") +
+  scale_color_colorblind() +
+  facet_wrap(~disease, ncol = 1) +
+  theme_clean() +
+  ylim(0, 18) +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    title = "2018",
+    subtitle = "Two cuts",
+    x = "Day after 17 August",
+    y = "Percent area affected (%)"
+  )
+
+
+(p20180cut + p20181cut + p20182cut) +
+  plot_layout(guides = "collect")
+ggsave("figs/p9.png", width = 12, height = 8, bg = "white")
+```
+### All curves 2019 (Fig. S2)
+
+```{r}
+dat3 <- dat %>%
+  filter(year == "2019") %>%
+  group_by(time, treat, cut) %>%
+  summarize(
+    Bipolaris = mean(bip),
+    Cercospora = mean(cer),
+    Pyricularia = mean(pyr),
+    mean_all = mean(all)
+  ) %>%
+  ungroup() %>%
+  pivot_longer(4:7, names_to = "disease", values_to = "sev") %>%
+  filter(disease == "mean_all")
+
+
+p20190cut <- dat3 %>%
+  filter(cut == "0C") %>%
+  ggplot(aes(time, sev, color = treat, groups = treat)) +
+  geom_line() +
+  geom_point() +
+  scale_color_colorblind() +
+  theme_clean() +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    title = "2019",
+    subtitle = "Uncut",
+    x = "Day after 10 May",
+    y = "Percent area affected (%)"
+  )
+
+
+
+p20191cut <- dat3 %>%
+  filter(cut == "1C") %>%
+  ggplot(aes(time, sev, color = treat, groups = treat)) +
+  geom_line() +
+  geom_point() +
+  scale_color_colorblind() +
+  theme_clean() +
+  annotate("segment",
+    linetype = "dotted", x = 17, xend = 17, y = 20, yend = 0,
+    arrow = arrow()
+  ) +
+  annotate("text", x = 17, y = 20, label = "27 May") +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    title = "2019",
+    subtitle = "One cut",
+    x = "Day after 10 May",
+    y = "Percent area affected (%)"
+  )
+
+
+
+p20192cut <- dat3 %>%
+  filter(cut == "2C") %>%
+  ggplot(aes(time, sev, color = treat, groups = treat)) +
+  geom_line() +
+  geom_point() +
+  scale_color_colorblind() +
+  theme_clean() +
+  annotate("segment",
+    linetype = "dotted", x = 17, xend = 17, y = 20, yend = 0,
+    arrow = arrow()
+  ) +
+  annotate("text", x = 17, y = 20, label = "27 May") +
+  annotate("segment",
+    linetype = "dotted", x = 38, xend = 38, y = 20, yend = 0,
+    arrow = arrow()
+  ) +
+  annotate("text", x = 38, y = 20, label = "8 Jul") +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    title = "2019",
+    subtitle = "Two cuts",
+    x = "Day after 10 May",
+    y = "Percent area affected (%)"
+  )
+
+
+
+(p20190cut + p20191cut + p20192cut) +
+  plot_layout(guides = "collect")
+ggsave("figs/p11.png", width = 12, height = 3, bg = "white")
+```
+
+
+## AUDPC calculation
+
+```{r message=FALSE, warning=FALSE}
+library(epifitter)
+```
+
+```{r}
+dat1 <- dat %>%
+  group_by(year, treat, cut, rep) %>%
+  summarize(audpc = AUDPC(time, all))
+
+dat1_2018 <- dat1 %>%
+  filter(year == 2018) %>%
+  mutate(audpc2 = audpc / 72)
+
+dat1_2019 <- dat1 %>%
+  filter(year == 2019) %>%
+  mutate(audpc2 = audpc / 119)
+
+dat2 <- rbind(dat1_2018, dat1_2019)
+```
+
+### Box plots AUDPC
+
+```{r}
+p2 <- dat2 %>%
+  ggplot(aes(treat, audpc2, color = cut)) +
+  geom_boxplot(outlier.colour = NA) +
+  geom_jitter(color = "grey80", width = 0.1) +
+  facet_grid(~cut) +
+  ylim(0, 17) +
+  scale_color_colorblind() +
+  theme_clean() +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  labs(
+    x = "Treatment",
+    y = "Standardized AUDPC",
+    color = "No. of cuts"
+  )
+```
+
+## Mixed model
+
+
+```{r}
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+library(lme4)
+library(DHARMa)
+library(performance)
+```
+
+
+```{r}
+m1 <- lmer(audpc2 ~ treat * cut + (1 | year),
+  data = dat2
+)
+plot(simulateResiduals(m1))
+check_model(m1)
+car::Anova(m1)
+library(report)
+report(m1)
+
+library(emmeans)
+library(multcompView)
+library(multcomp)
+cld(emmeans(m1, ~ cut | treat))
+pairs(emmeans(m1, ~ cut | treat))
+```
+
+## Efficacy plots
+
+```{r}
+dat_control <- read_csv("data/dat_efficacy.csv")
+```
+
+
+```{r}
+p3 <- dat_control %>%
+  ggplot(aes(reorder(Treat, Efficacy), Efficacy, color = Efficacy)) +
+  # geom_col(size = 0.4)+
+  geom_point(size = 4) +
+  geom_errorbar(aes(ymin = 0, ymax = Efficacy), width = 0) +
+  scale_color_gradient_tableau() +
+  coord_flip() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(
+    y = "Reduction relative to the uncut check treatment (%)",
+    x = "",
+    fill = ""
+  ) +
+  theme_clean() +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  )
+ggsave("figs/control.png",
+  width = 6, height = 4,
+  bg = "white"
+)
+p3
+```
+## Figure 2
+
+```{r}
+
+(p2 | p3) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(widths = c(1.5, 1))
+ggsave("figs/p2.png", width = 12, height = 5, bg = "white")
+```
+
+## Foliar Si
+
+```{r}
+dat_si <- read_csv("data/Si_leaf.csv")
+```
+
+## Plots 
+
+```{r}
+
+psi1 <- dat_si %>%
+  filter(year == "2018") %>%
+  ggplot(aes(Cut, Si, color = Treat)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 0.3) +
+  facet_wrap(~Treat, ncol = 4) +
+  theme_clean() +
+  scale_color_colorblind() +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  ylim(20, 65) +
+  stat_summary(fun.data = "mean_cl_boot", size = 0.3) +
+  labs(
+    title = "2018",
+    x = "Treatment / Cut",
+    y = "Foliar Silicon (mg Si/kg)"
+  )
+
+
+
+psi11 <- dat_si %>%
+  filter(year == "2019") %>%
+  ggplot(aes(Cut, Si, color = Treat)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 0.3) +
+  facet_wrap(~Treat, ncol = 4) +
+  theme_clean() +
+  scale_color_colorblind() +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  ylim(20, 65) +
+  stat_summary(fun.data = "mean_cl_boot", size = 0.3) +
+  labs(
+    title = "2019",
+    x = "Treatment / Cut", y = "Foliar Silicon (mg Si/kg)"
+  )
+```
+
+## Predict Si 
+
+```{r}
+
+m2 <- aov(Si ~ Treat, data = dat_si)
+anova(m2)
+car::Anova(m2)
+plot(simulateResiduals(m2))
+```
+
+
+```{r}
+library(ggthemes)
+
+dat_si2 <- read_csv("data/Si_soil.csv")
+
+psi2 <- dat_si2 %>%
+  filter(year == "2018") %>%
+  ggplot(aes(Cut, Si, color = Treat)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 0.3) +
+  facet_wrap(~Treat, ncol = 4) +
+  theme_clean() +
+  scale_color_colorblind() +
+  ylim(0, 10) +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  stat_summary(fun.data = "mean_cl_boot", size = 0.3) +
+  labs(title = "2018", x = "Treatment / Cut", y = "Soil Silicon (mg Si/kg)")
+
+
+psi3 <- dat_si2 %>%
+  filter(year == "2019") %>%
+  ggplot(aes(Cut, Si, color = Treat)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 0.3) +
+  facet_wrap(~Treat, ncol = 4) +
+  theme_clean() +
+  ylim(0, 10) +
+  scale_color_colorblind() +
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  stat_summary(fun.data = "mean_cl_boot", size = 0.3) +
+  labs(
+    title = "2019",
+    x = "Treatment / Cut",
+    y = "Soil Silicon (mg Si/kg)"
+  )
+```
+
+## Figure 3 
+```{r}
+
+
+(psi2 + psi3) / (psi1 + psi11) +
+  plot_annotation(tag_levels = "A")
+ggsave("figs/p5.png", width = 8, height = 7)
+```
+
+
+## Weather 2018
+
+
+```{r}
+library(lubridate)
+dat_wth <- read_csv("data/wth_2018.csv")
+
+dat_wth <- dat_wth %>%
+  separate(Date, into = c("Month", "Day")) %>%
+  mutate(Year = "2018") %>%
+  unite(date, Year, Month, Day, sep = "-") %>%
+  mutate(date = as.Date(date))
+```
+
+
+```{r}
+met_2018 <- dat_wth %>%
+  ggplot(aes(date, RH)) +
+  scale_x_date(
+    date_labels = "%b %d",
+    date_breaks = "2 week"
+  ) +
+  geom_line(linetype = "dotted") +
+  theme_clean() +
+  labs(
+    y = "Value",
+    x = "Date",
+    title = "2018"
+  ) +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  geom_col(aes(x = date, y = Rain), color = "steelblue", fill = "steelblue") +
+  geom_line(aes(x = date, y = Tmin), color = "navy") +
+  geom_line(aes(x = date, y = Tmax), color = "darkorange") +
+  annotate(geom = "text", x = as.Date("2018-12-05"), y = 85, label = "RH") +
+  annotate(geom = "text", x = as.Date("2018-12-05"), y = 30, label = "TMax") +
+  annotate(geom = "text", x = as.Date("2018-12-05"), y = 20, label = "TMin") +
+  annotate(geom = "text", x = as.Date("2018-12-05"), y = 5, label = "Rain")
+ggsave("figs/p6.png", width = 12, height = 5)
+```
+
+
+
+## Weather 2019
+
+
+```{r}
+library(lubridate)
+dat_wth2 <- read_csv("data/wth_2019.csv")
+
+dat_wth2 <- dat_wth2 %>%
+  separate(Date, into = c("Month", "Day")) %>%
+  mutate(Year = "2019") %>%
+  unite(date, Year, Month, Day, sep = "-") %>%
+  mutate(date = as.Date(date))
+```
+
+
+
+```{r}
+library(ggthemes)
+met_2019 <- dat_wth2 %>%
+  ggplot(aes(date, RH)) +
+  scale_x_date(
+    date_labels = "%b %d",
+    date_breaks = "2 week"
+  ) +
+  geom_line(linetype = "dotted") +
+  theme_clean() +
+  labs(
+    y = "Value",
+    x = "Date",
+    title = "2019"
+  ) +
+  theme(
+    plot.background = element_rect(colour = "white"),
+    legend.background = element_rect(colour = "white")
+  ) +
+  geom_col(data = dat_wth2, aes(x = date, y = Rain), color = "steelblue", fill = "steelblue") +
+  geom_line(data = dat_wth2, aes(x = date, y = Tmin), color = "navy") +
+  geom_line(data = dat_wth2, aes(x = date, y = Tmax), color = "darkorange") +
+  annotate(geom = "text", x = as.Date("2019-12-05"), y = 85, label = "RH") +
+  annotate(geom = "text", x = as.Date("2019-12-05"), y = 30, label = "TMax") +
+  annotate(geom = "text", x = as.Date("2019-12-05"), y = 20, label = "TMin") +
+  annotate(geom = "text", x = as.Date("2019-12-05"), y = 5, label = "Rain")
+ggsave("figs/p7.png", width = 12, height = 5)
+```
+
+## Figure S3
+
+```{r}
+(met_2018 / met_2019) +
+  plot_annotation(tag_levels = "A")
+ggsave("figs/p8.png", width = 12, height = 7)
+```
