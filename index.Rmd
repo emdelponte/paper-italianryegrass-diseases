@@ -41,9 +41,9 @@ p2018 <- dat %>%
   filter(year == "2018") %>%
   group_by(time, treat, cut) %>%
   summarize(
-    Bipolaris = mean(bip),
-    Cercospora = mean(cer),
-    Pyricularia = mean(pyr),
+    `Brown spot` = mean(bip),
+    `Parrot's eye` = mean(cer),
+    `Gray leaf spot` = mean(pyr),
     mean_all = mean(all)
   ) %>%
   # select(-mean_all) %>%
@@ -60,7 +60,7 @@ p2018 <- dat %>%
   scale_fill_canva() +
   ylim(0, 25) +
   labs(
-    fill = "Pathogen", x = "Day after disease onset (17 August)",
+    fill = "Disease", x = "Day after disease onset (17 August)",
     y = "Percent area affected (%)",
     title = "2018"
   )
@@ -76,9 +76,9 @@ p2019 <- dat %>%
   filter(year == "2019") %>%
   group_by(time, treat, cut) %>%
   summarize(
-    Bipolaris = mean(bip),
-    Cercospora = mean(cer),
-    Pyricularia = mean(pyr),
+   `Brown spot` = mean(bip),
+    `Parrot's eye` = mean(cer),
+    `Gray leaf spot` = mean(pyr),
     mean_all = mean(all)
   ) %>%
   # select(-mean_all) %>%
@@ -95,7 +95,7 @@ p2019 <- dat %>%
   scale_fill_canva() +
   ylim(0, 25) +
   labs(
-    fill = "Pathogen", x = "Day after disease onset (10 May)",
+    fill = "Disease", x = "Day after disease onset (10 May)",
     y = "Percent area affected (%)",
     title = "2019"
   )
@@ -118,9 +118,9 @@ dat2 <- dat %>%
   filter(year == "2018") %>%
   group_by(time, treat, cut) %>%
   summarize(
-    Bipolaris = mean(bip),
-    Cercospora = mean(cer),
-    Pyricularia = mean(pyr),
+    `Brown spot` = mean(bip),
+    `Parrot's eye` = mean(cer),
+    `Gray leaf spot` = mean(pyr),
     mean_all = mean(all)
   ) %>%
   # select(-mean_all) %>%
